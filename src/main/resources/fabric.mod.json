@@ -21,9 +21,6 @@
       "com.optijava.aoh.FabricMod"
     ]
   },
-  "mixins": [
-    "aoh.mixins.json"
-  ],
 
   "depends": {
     "fabricloader": ">=0.11.3",

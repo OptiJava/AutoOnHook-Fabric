@@ -1,9 +1,3 @@
-# Fabric Example Mod
+# Auto On Hook Mod
 
-## Setup
-
-For setup instructions please see the [fabric wiki page](https://fabricmc.net/wiki/tutorial:setup) that relates to the IDE that you are using.
-
-## License
-
-This template is available under the CC0 license. Feel free to learn from it and incorporate it in your own projects.
+这个模组能帮你更好的挂机，拿剑按住攻击键对准怪物会帮你自动控制冷却时间打怪，方便挂机刷怪。
