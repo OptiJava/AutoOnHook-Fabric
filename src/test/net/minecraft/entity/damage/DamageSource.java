@@ -1,0 +1,281 @@
+/*
+ * Decompiled with CFR 0.0.9 (FabricMC cc05e23f).
+ */
+package net.minecraft.entity.damage;
+
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.BadRespawnPointDamageSource;
+import net.minecraft.entity.damage.EntityDamageSource;
+import net.minecraft.entity.damage.ProjectileDamageSource;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.AbstractFireballEntity;
+import net.minecraft.entity.projectile.FireworkRocketEntity;
+import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.entity.projectile.WitherSkullEntity;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.explosion.Explosion;
+import org.jetbrains.annotations.Nullable;
+
+public class DamageSource {
+    public static final DamageSource IN_FIRE = new DamageSource("inFire").setBypassesArmor().setFire();
+    public static final DamageSource LIGHTNING_BOLT = new DamageSource("lightningBolt");
+    public static final DamageSource ON_FIRE = new DamageSource("onFire").setBypassesArmor().setFire();
+    public static final DamageSource LAVA = new DamageSource("lava").setFire();
+    public static final DamageSource HOT_FLOOR = new DamageSource("hotFloor").setFire();
+    public static final DamageSource IN_WALL = new DamageSource("inWall").setBypassesArmor();
+    public static final DamageSource CRAMMING = new DamageSource("cramming").setBypassesArmor();
+    public static final DamageSource DROWN = new DamageSource("drown").setBypassesArmor();
+    public static final DamageSource STARVE = new DamageSource("starve").setBypassesArmor().setUnblockable();
+    public static final DamageSource CACTUS = new DamageSource("cactus");
+    public static final DamageSource FALL = new DamageSource("fall").setBypassesArmor().setFromFalling();
+    public static final DamageSource FLY_INTO_WALL = new DamageSource("flyIntoWall").setBypassesArmor();
+    public static final DamageSource OUT_OF_WORLD = new DamageSource("outOfWorld").setBypassesArmor().setOutOfWorld();
+    public static final DamageSource GENERIC = new DamageSource("generic").setBypassesArmor();
+    public static final DamageSource MAGIC = new DamageSource("magic").setBypassesArmor().setUsesMagic();
+    public static final DamageSource WITHER = new DamageSource("wither").setBypassesArmor();
+    public static final DamageSource ANVIL = new DamageSource("anvil").setFallingBlock();
+    public static final DamageSource FALLING_BLOCK = new DamageSource("fallingBlock").setFallingBlock();
+    public static final DamageSource DRAGON_BREATH = new DamageSource("dragonBreath").setBypassesArmor();
+    public static final DamageSource DRYOUT = new DamageSource("dryout");
+    public static final DamageSource SWEET_BERRY_BUSH = new DamageSource("sweetBerryBush");
+    public static final DamageSource FREEZE = new DamageSource("freeze").setBypassesArmor();
+    public static final DamageSource FALLING_STALACTITE = new DamageSource("fallingStalactite").setFallingBlock();
+    public static final DamageSource STALAGMITE = new DamageSource("stalagmite").setBypassesArmor().setFromFalling();
+    private boolean fallingBlock;
+    private boolean bypassesArmor;
+    private boolean outOfWorld;
+    private boolean unblockable;
+    private float exhaustion = 0.1f;
+    private boolean fire;
+    private boolean projectile;
+    private boolean scaleWithDifficulty;
+    private boolean magic;
+    private boolean explosive;
+    private boolean fromFalling;
+    /**
+     * Whether the attacked entity should be neutral to the attacker.
+     * 
+     * @apiNote This is used by goats to prevent rammed mobs from retaliating.
+     * Damages that are neutral do not cause {@link LivingEntity#setAttacker(LivingEntity)}
+     * to be called.
+     */
+    private boolean neutral;
+    public final String name;
+
+    public static DamageSource sting(LivingEntity attacker) {
+        return new EntityDamageSource("sting", attacker);
+    }
+
+    public static DamageSource mob(LivingEntity attacker) {
+        return new EntityDamageSource("mob", attacker);
+    }
+
+    public static DamageSource mobProjectile(Entity projectile, @Nullable LivingEntity attacker) {
+        return new ProjectileDamageSource("mob", projectile, attacker);
+    }
+
+    public static DamageSource player(PlayerEntity attacker) {
+        return new EntityDamageSource("player", attacker);
+    }
+
+    public static DamageSource arrow(PersistentProjectileEntity projectile, @Nullable Entity attacker) {
+        return new ProjectileDamageSource("arrow", projectile, attacker).setProjectile();
+    }
+
+    public static DamageSource trident(Entity trident, @Nullable Entity attacker) {
+        return new ProjectileDamageSource("trident", trident, attacker).setProjectile();
+    }
+
+    public static DamageSource firework(FireworkRocketEntity firework, @Nullable Entity attacker) {
+        return new ProjectileDamageSource("fireworks", firework, attacker).setExplosive();
+    }
+
+    public static DamageSource fireball(AbstractFireballEntity fireball, @Nullable Entity attacker) {
+        if (attacker == null) {
+            return new ProjectileDamageSource("onFire", fireball, fireball).setFire().setProjectile();
+        }
+        return new ProjectileDamageSource("fireball", fireball, attacker).setFire().setProjectile();
+    }
+
+    public static DamageSource witherSkull(WitherSkullEntity witherSkull, Entity attacker) {
+        return new ProjectileDamageSource("witherSkull", witherSkull, attacker).setProjectile();
+    }
+
+    public static DamageSource thrownProjectile(Entity projectile, @Nullable Entity attacker) {
+        return new ProjectileDamageSource("thrown", projectile, attacker).setProjectile();
+    }
+
+    public static DamageSource magic(Entity magic, @Nullable Entity attacker) {
+        return new ProjectileDamageSource("indirectMagic", magic, attacker).setBypassesArmor().setUsesMagic();
+    }
+
+    public static DamageSource thorns(Entity attacker) {
+        return new EntityDamageSource("thorns", attacker).setThorns().setUsesMagic();
+    }
+
+    public static DamageSource explosion(@Nullable Explosion explosion) {
+        return DamageSource.explosion(explosion != null ? explosion.getCausingEntity() : null);
+    }
+
+    public static DamageSource explosion(@Nullable LivingEntity attacker) {
+        if (attacker != null) {
+            return new EntityDamageSource("explosion.player", attacker).setScaledWithDifficulty().setExplosive();
+        }
+        return new DamageSource("explosion").setScaledWithDifficulty().setExplosive();
+    }
+
+    public static DamageSource badRespawnPoint() {
+        return new BadRespawnPointDamageSource();
+    }
+
+    public String toString() {
+        return "DamageSource (" + this.name + ")";
+    }
+
+    public boolean isProjectile() {
+        return this.projectile;
+    }
+
+    public DamageSource setProjectile() {
+        this.projectile = true;
+        return this;
+    }
+
+    public boolean isExplosive() {
+        return this.explosive;
+    }
+
+    public DamageSource setExplosive() {
+        this.explosive = true;
+        return this;
+    }
+
+    public boolean bypassesArmor() {
+        return this.bypassesArmor;
+    }
+
+    public boolean isFallingBlock() {
+        return this.fallingBlock;
+    }
+
+    public float getExhaustion() {
+        return this.exhaustion;
+    }
+
+    public boolean isOutOfWorld() {
+        return this.outOfWorld;
+    }
+
+    public boolean isUnblockable() {
+        return this.unblockable;
+    }
+
+    protected DamageSource(String name) {
+        this.name = name;
+    }
+
+    @Nullable
+    public Entity getSource() {
+        return this.getAttacker();
+    }
+
+    @Nullable
+    public Entity getAttacker() {
+        return null;
+    }
+
+    protected DamageSource setBypassesArmor() {
+        this.bypassesArmor = true;
+        this.exhaustion = 0.0f;
+        return this;
+    }
+
+    protected DamageSource setFallingBlock() {
+        this.fallingBlock = true;
+        return this;
+    }
+
+    protected DamageSource setOutOfWorld() {
+        this.outOfWorld = true;
+        return this;
+    }
+
+    protected DamageSource setUnblockable() {
+        this.unblockable = true;
+        this.exhaustion = 0.0f;
+        return this;
+    }
+
+    protected DamageSource setFire() {
+        this.fire = true;
+        return this;
+    }
+
+    public DamageSource setNeutral() {
+        this.neutral = true;
+        return this;
+    }
+
+    public Text getDeathMessage(LivingEntity entity) {
+        LivingEntity livingEntity = entity.getPrimeAdversary();
+        String string = "death.attack." + this.name;
+        String string2 = string + ".player";
+        if (livingEntity != null) {
+            return new TranslatableText(string2, entity.getDisplayName(), livingEntity.getDisplayName());
+        }
+        return new TranslatableText(string, entity.getDisplayName());
+    }
+
+    public boolean isFire() {
+        return this.fire;
+    }
+
+    public boolean isNeutral() {
+        return this.neutral;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public DamageSource setScaledWithDifficulty() {
+        this.scaleWithDifficulty = true;
+        return this;
+    }
+
+    public boolean isScaledWithDifficulty() {
+        return this.scaleWithDifficulty;
+    }
+
+    public boolean isMagic() {
+        return this.magic;
+    }
+
+    public DamageSource setUsesMagic() {
+        this.magic = true;
+        return this;
+    }
+
+    public boolean isFromFalling() {
+        return this.fromFalling;
+    }
+
+    public DamageSource setFromFalling() {
+        this.fromFalling = true;
+        return this;
+    }
+
+    public boolean isSourceCreativePlayer() {
+        Entity entity = this.getAttacker();
+        return entity instanceof PlayerEntity && ((PlayerEntity)entity).getAbilities().creativeMode;
+    }
+
+    @Nullable
+    public Vec3d getPosition() {
+        return null;
+    }
+}
+
