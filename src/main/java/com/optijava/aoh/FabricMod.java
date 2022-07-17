@@ -2,11 +2,15 @@ package com.optijava.aoh;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public class FabricMod implements ModInitializer {
     public static final Logger LOGGER = LogManager.getLogger();
@@ -30,24 +34,29 @@ public class FabricMod implements ModInitializer {
                     }
                 }
             } catch (Exception e) {
-                throw new RuntimeException("[AOH] Auto On Hook Mod:Unexpect Exception in auto attack.", e);
+                throw new RuntimeException("[AOH][Auto Attack] Auto On Hook Mod:Unexpect Exception in auto attack.", e);
             }
 
             // Auto Walk
             if (!FabricMod.isAutoWalk) {
                 if (minecraftClient.options.keyForward.isPressed() && minecraftClient.options.keyBack.isPressed()) {
                     FabricMod.isAutoWalk = true;
-                    LOGGER.info("[AOH] Auto Walk start.");
+                    LOGGER.info("[AOH][Auto Walk] Auto Walk start.");
                 }
             }
             if (FabricMod.isAutoWalk) {
                 if (minecraftClient.options.keyForward.isPressed() && minecraftClient.options.keyBack.isPressed()) {
                     FabricMod.isAutoWalk = false;
-                    LOGGER.info("[AOH] Auto Walk stop.");
+                    LOGGER.info("[AOH][Auto Walk] Auto Walk stop.");
                 }
             }
             if (FabricMod.isAutoWalk) {
-                minecraftClient.player.setMovementSpeed(5.0f);
+                try {
+                    Method m = ClientPlayerEntity.class.getDeclaredMethod("sendMovementPackets");
+                    m.invoke(minecraftClient.player);
+                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                    LOGGER.error("[AOH][Auto Walk Reflector] Failed load Auto Walk:", e);
+                }
             }
         });
     }
