@@ -2,7 +2,6 @@
   "schemaVersion": 1,
   "id": "aoh",
   "version": "${version}",
-
   "name": "Auto On Hook Mod",
   "description": "This a fabric mod that can help you on hook in minecraft.",
   "authors": [
@@ -12,23 +11,24 @@
     "homepage": "https://github.com/OptiJava/AutoOnHook-Fabric",
     "sources": "https://github.com/OptiJava/AutoOnHook-Fabric"
   },
-
   "license": "CC0-1.0",
-
   "environment": "*",
   "entrypoints": {
     "main": [
       "com.optijava.aoh.FabricMod"
     ]
   },
-
+  "mixins": [
+    "aoh.mixins.json"
+  ],
   "depends": {
     "fabricloader": ">=0.11.3",
+    "fabric-key-binding-api-v1": "*",
     "fabric": "*",
     "minecraft": "1.17.x",
     "java": ">=16"
   },
   "suggests": {
-    "another-mod": "*"
+    "another-mod": "Tis-Carpet-Addition"
   }
 }
